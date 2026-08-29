@@ -10,7 +10,7 @@
   <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-compatible-7c4dff" />
   <img alt="Hermes" src="https://img.shields.io/badge/Hermes-compatible-00bcd4" />
   <img alt="Memory agnostic" src="https://img.shields.io/badge/memory-backend%20agnostic-2ea44f" />
-  <img alt="Version" src="https://img.shields.io/badge/version-0.1.1-orange" />
+  <img alt="Version" src="https://img.shields.io/badge/version-0.2.0-orange" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue" />
 </p>
 
@@ -65,7 +65,7 @@ A folder is already a strong contextual cue. MemHooks makes that cue explicit.
 - **Agent-agnostic** — the skill describes the behavior, not one specific harness.
 - **Memory-agnostic** — examples are provided for Hindsight, OpenViking and Honcho; an LLM can infer the equivalent operations for another backend.
 - **Retrieval-only** — MemHooks does not create, rewrite, consolidate or delete memories.
-- **Anti-recall too** — `exclude` keeps obsolete but semantically tempting memories out of working context.
+- **Anti-recall too** — `exclude` lets you keep obsolete but semantically tempting memories out of working context.
 - **Cheap by design** — small files, bounded retrieval, no database or daemon of its own.
 
 ## A minimal hook
@@ -93,6 +93,31 @@ facts disagree or the rationale is still unclear.
 
 That file contains **no memory itself**. It tells the agent which memories are worth retrieving before it touches this subtree.
 
+## Who fills `MEMHOOKS.md`?
+
+A hook that never changes would eventually become useless, so MemHooks includes a **zero-LLM maintainer**. The default design deliberately does **not** run a second model after every session.
+
+There are two maintenance paths:
+
+1. **Deterministic auto-anchors — zero model tokens.** The included `scripts/memhooks_update.py` can run on a runtime's `post_tool_call` event. It inspects the files touched by the tool call and creates/refreshes a small machine-managed block in the relevant directory's `MEMHOOKS.md`. That block says, in effect: *when working here later, recall the decisions, constraints, failures, fixes, rejected approaches and unresolved issues involving these files.*
+2. **Same-turn semantic cues — no extra LLM call.** If the current agent has just discovered a non-obvious architectural decision, failure mode, constraint, or rejected approach, it can call the same script's `note` command while it is already reasoning. That adds one concise **future retrieval question**, not the answer itself.
+
+Example:
+
+```bash
+python3 memhooks_update.py note \
+  --cwd "$PWD" \
+  --query "Why was refresh-token rotation split into two stages, and what alternatives were rejected?"
+```
+
+The important distinction is:
+
+> **The memory backend stores what happened. MemHooks stores the cue that tells a future agent there is something worth recalling.**
+
+The deterministic writer guarantees that active code areas acquire recall anchors even if the model never thinks about MemHooks. Semantic notes make those anchors sharper, but they piggyback on the model call that is already happening instead of paying for a separate summarization pass.
+
+MemHooks only auto-maintains its **routing metadata**. It still does not create, rewrite, consolidate, or delete memories in Hindsight/OpenViking/Honcho/etc.
+
 ## How the skill adapts
 
 MemHooks ships with worked examples rather than a giant adapter framework:
@@ -104,31 +129,27 @@ MemHooks ships with worked examples rather than a giant adapter framework:
 | **Honcho** | semantic search/context for concrete memory; dialectic reasoning only when synthesis is needed |
 | **Anything else** | inspect the available memory tools, use the bundled mappings as examples, and infer the closest native operations |
 
-The important rule is simple:
-
 > **Do not require a bespoke MemHooks plugin for every memory system. A capable agent should adapt the retrieval intent to the tools it actually has.**
 
 See [`references/memory-systems/`](references/memory-systems/) for the mappings.
 
 ## Runtime hook support
 
-The **MemHooks convention and `SKILL.md` are agent-agnostic**. The repository's current **executable pre-LLM loader is Hermes-specific** because every agent runtime exposes hooks differently.
+The **MemHooks convention, maintainer, and `SKILL.md` are agent-agnostic**. Runtime plumbing is necessarily agent-specific because every agent exposes lifecycle hooks differently.
 
 Today:
 
-- **Hermes / Hermes Desktop:** includes a working `pre_llm_call` loader under [`hooks/hermes/`](hooks/hermes/).
-- **Other agents:** can use the MemHooks skill/spec immediately, but they do not yet get the same hard pre-LLM guarantee from this repository unless their own hook mechanism is wired to the same loader behavior.
+- **Hermes / Hermes Desktop:** includes working `pre_llm_call` loading and `post_tool_call` maintenance under [`hooks/hermes/`](hooks/hermes/).
+- **Other agents:** can use the skill/spec and the generic maintainer immediately, but need a thin adapter to wire their native lifecycle events to the same behavior.
 
-Porting the loader should be straightforward. A runtime integration only needs to do four things:
+A full runtime adapter only needs to do two things:
 
 ```text
-1. fire before the model call
-2. obtain the active working directory
-3. load + merge MEMHOOKS.md from workspace root → current directory
-4. inject the merged contents into the model context
+before model call -> load + merge MEMHOOKS.md and inject routing
+after tool call   -> pass cwd + tool input to memhooks_update.py event
 ```
 
-The filesystem traversal and inheritance semantics are generic; only the runtime's hook registration and context-injection API are agent-specific. Contributions for Claude Code, Codex, OpenCode, Cursor, or other runtimes are welcome under `hooks/<runtime>/`.
+The filesystem traversal, file format, update script, and inheritance semantics are generic. Only event registration/context injection are runtime-specific. Contributions for Claude Code, Codex, OpenCode, Cursor, or other runtimes are welcome under `hooks/<runtime>/`.
 
 ## Installation
 
@@ -142,14 +163,13 @@ git clone https://github.com/AronAxe/MEMhooks.git ~/.hermes/skills/memhooks
 
 Or point Hermes `skills.external_dirs` at the parent directory containing this checkout. For Hermes Desktop, use the `skills` directory under the app's active `HERMES_HOME`.
 
-#### Guaranteed loading: install the real `pre_llm_call` hook
-
-The skill tells an agent how MemHooks works. The included Hermes shell hook makes sure the agent **cannot simply forget to look for the file**. Hermes officially supports `pre_llm_call` context injection before the tool-calling loop; the bundled script uses that lifecycle point to load the applicable root → local `MEMHOOKS.md` chain and inject it into the current turn before the model sees it.
+#### Guaranteed loading + automatic maintenance
 
 ```bash
 mkdir -p ~/.hermes/agent-hooks
 cp ~/.hermes/skills/memhooks/hooks/hermes/memhooks_pre_llm.py ~/.hermes/agent-hooks/
-chmod +x ~/.hermes/agent-hooks/memhooks_pre_llm.py
+cp ~/.hermes/skills/memhooks/scripts/memhooks_update.py ~/.hermes/agent-hooks/
+chmod +x ~/.hermes/agent-hooks/memhooks_pre_llm.py ~/.hermes/agent-hooks/memhooks_update.py
 ```
 
 Add this to `~/.hermes/config.yaml`:
@@ -159,9 +179,18 @@ hooks:
   pre_llm_call:
     - command: "python3 ~/.hermes/agent-hooks/memhooks_pre_llm.py"
       timeout: 5
+  post_tool_call:
+    - command: "python3 ~/.hermes/agent-hooks/memhooks_update.py event"
+      timeout: 5
 ```
 
-Hermes asks for approval the first time it sees a new shell hook. Once enabled, every user turn in a MemHooks-enabled directory deterministically loads the applicable hook files **before the LLM call**. No extra LLM call is used to discover or read them.
+Enable MemHooks once in a project:
+
+```bash
+python3 ~/.hermes/agent-hooks/memhooks_update.py init /path/to/project
+```
+
+Hermes asks for approval the first time it sees a new shell hook. Once enabled, `pre_llm_call` deterministically loads the applicable hook files **before the LLM call**, while `post_tool_call` maintains file-scoped recall anchors after substantive tool activity. Neither path makes an extra LLM call.
 
 See [`hooks/hermes/README.md`](hooks/hermes/README.md) and [`hooks/hermes/config.example.yaml`](hooks/hermes/config.example.yaml).
 
@@ -173,13 +202,11 @@ If your agent understands the open `SKILL.md` / Agent Skills convention, give it
 
 The canonical format is Markdown with YAML frontmatter. That gives the agent machine-readable routing metadata plus a tiny amount of optional human-readable guidance.
 
-Core fields:
-
 | Field | Purpose |
 |---|---|
 | `inherits` | inherit parent-directory hooks (`true` by default) |
-| `recall_queries` | the concrete questions worth asking memory |
-| `entities` | named concepts/entities that should sharpen retrieval |
+| `recall_queries` | concrete questions worth asking memory |
+| `entities` | named concepts/entities that sharpen retrieval |
 | `tags` | backend-neutral relevance hints |
 | `knowledge_pages` | existing stable summaries/mental-model-like resources to retrieve if the backend has an equivalent |
 | `exclude` | obsolete or misleading context that should not enter the current workspace |
@@ -208,21 +235,11 @@ an agent working in `/repo/backend/auth/` reads all three **in that order**.
 
 ## What MemHooks is *not*
 
-MemHooks is **not**:
-
-- a vector database;
-- a memory provider;
-- a replacement for Hindsight, OpenViking, Honcho, Mem0, Graphiti, etc.;
-- an automatic memory-writing system;
-- a knowledge-page generator;
-- a GraphRAG framework;
-- a reason to shove more tokens into every prompt.
+MemHooks is **not** a vector database, memory provider, automatic memory-writing system, knowledge-page generator, GraphRAG framework, or excuse to shove more tokens into every prompt.
 
 It is deliberately boring infrastructure:
 
 > **When an agent works here, remember these things first.**
-
-That is the whole trick.
 
 ## Repository layout
 
@@ -240,6 +257,8 @@ MEMhooks/
 │       ├── memhooks_pre_llm.py
 │       ├── config.example.yaml
 │       └── README.md
+├── scripts/
+│   └── memhooks_update.py
 ├── templates/
 │   └── MEMHOOKS.md
 ├── examples/
@@ -284,7 +303,7 @@ They are separate projects, but they share the same basic prejudice: an AI agent
 
 ## Status
 
-**v0.1.1 — experimental convention / agent skill + real Hermes pre-LLM loader.**
+**v0.2.0 — experimental convention / agent skill + deterministic load-and-maintain runtime.**
 
 The format is intentionally small and still open to refinement. Issues, backend mappings and real-world examples are welcome.
 
