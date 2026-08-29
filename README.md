@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/memhooks logo.png" alt="MemHooks logo" width="600" />
+  <img src="assets/memhooklogo.png" alt="MemHooks logo" width="600" />
 </p>
 
 <h1 align="center">MemHooks</h1>
