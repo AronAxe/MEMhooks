@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/memhooks-hero.svg" alt="How MemHooks works" width="100%" />
+  <img src="assets/memhook2.png" alt="How MemHooks works" width="100%" />
 </p>
 
 ## The idea
