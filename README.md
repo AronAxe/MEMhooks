@@ -3,8 +3,8 @@
 </p>
 
 <h1 align="center">MemHooks</h1>
-<p align="center"><strong>Filesystem-scoped memory recall for AI agents.</strong></p>
-<p align="center"><em>Hook the right memories into the right context.</em> 🎣</p>
+<p align="center"><strong>Mnemonic devices for agents.</strong></p>
+<p align="center">Filesystem-scoped memory recall · <em>Hook the right memories into the right context.</em> 🎣</p>
 
 <p align="center">
   <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-compatible-7c4dff" />
