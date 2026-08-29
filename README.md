@@ -1,6 +1,3 @@
-<p align="center">
-  <img src="assets/memhooklogo.png" alt="MemHooks logo" width="300" />
-</p>
 
 <h1 align="center">MemHooks</h1>
 <p align="center"><strong>Mnemonic devices for agents.</strong></p>
@@ -312,6 +309,10 @@ They are separate projects, but they share the same basic prejudice: an AI agent
 **v0.2.0 — experimental convention / agent skill + deterministic load-and-maintain runtime.**
 
 The format is intentionally small and still open to refinement. Issues, backend mappings and real-world examples are welcome.
+
+<p align="center">
+  <img src="assets/memhooklogo.png" alt="MemHooks logo" width="300" />
+</p>
 
 ## License
 
