@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/memhooks-logo.svg" alt="MemHooks logo" width="210" />
+  <img src="assets/memhooks-logo-original.jpg" alt="MemHooks logo" width="210" />
 </p>
 
 <h1 align="center">MemHooks</h1>
@@ -19,6 +19,12 @@
 </p>
 
 ## The idea
+
+> **You can't recall what you don't know you know.**
+
+An agent can have the right memory stored perfectly and still fail to use it, because retrieval begins with a cue. If the agent no longer remembers that an old decision, failure, workaround, constraint, or insight even exists, it may never formulate the search that would bring that memory back.
+
+That is the gap MemHooks is meant to fill. It stores the **cue to remember**, close to the code or folder where that cue matters.
 
 Your agent may already **have** the right memory. The failure is often simpler: it never realizes that *this folder* is where that memory matters.
 
@@ -250,6 +256,7 @@ MEMhooks/
 ├── LICENSE
 ├── CHANGELOG.md
 ├── assets/
+│   ├── memhooks-logo-original.jpg
 │   ├── memhooks-logo.svg
 │   └── memhooks-hero.svg
 ├── hooks/
