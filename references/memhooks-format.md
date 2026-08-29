@@ -77,6 +77,26 @@ Use native negative filtering where available; otherwise filter returned results
 ### `sensitivity`
 Optional advisory classification such as `public`, `internal`, or `private`. Respect the privacy boundary of the already configured memory system.
 
+## Machine-maintained body blocks
+
+A runtime may maintain bounded retrieval cues in the Markdown body without rewriting hand-authored frontmatter. The reference maintainer uses two reserved blocks:
+
+```md
+<!-- memhooks:auto:start -->
+## Auto-maintained recall anchors
+...
+<!-- memhooks:auto:end -->
+
+<!-- memhooks:notes:start -->
+## In-session retrieval cues
+...
+<!-- memhooks:notes:end -->
+```
+
+`auto` contains deterministic path-scoped anchors generated from tool activity. `notes` contains concise future-retrieval questions recorded during the same turn in which a non-obvious decision/failure/constraint was discovered.
+
+These blocks are still **retrieval metadata, not memory content**. Implementations should preserve everything outside their own managed markers and keep the blocks bounded.
+
 ## Merge semantics
 
 For the active directory:
@@ -87,6 +107,13 @@ For the active directory:
 4. Append list fields (`recall_queries`, `entities`, `tags`, `knowledge_pages`, `exclude`) and de-duplicate exact duplicates.
 5. For scalar fields (`bank`, `scope`, `sensitivity`), the most local value wins.
 6. Append free-form guidance root → leaf; local guidance has priority when instructions conflict.
+7. Treat machine-maintained body blocks exactly as local retrieval guidance; do not interpret them as durable memory facts.
+
+## Maintenance principle
+
+The memory backend stores the actual event/decision/fact. `MEMHOOKS.md` stores only enough information to make a future agent realize **what it should ask memory about**.
+
+Prefer deterministic maintenance where possible. A separate LLM summarization pass should not be required merely to keep the routing file alive.
 
 ## Non-goals
 
