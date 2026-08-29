@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/memhooks-logo.png" alt="MemHooks logo" width="210" />
+  <img src="assets/memhooks-logo.svg" alt="MemHooks logo" width="210" />
 </p>
 
 <h1 align="center">MemHooks</h1>
@@ -250,7 +250,7 @@ MEMhooks/
 ├── LICENSE
 ├── CHANGELOG.md
 ├── assets/
-│   ├── memhooks-logo.png
+│   ├── memhooks-logo.svg
 │   └── memhooks-hero.svg
 ├── hooks/
 │   └── hermes/
