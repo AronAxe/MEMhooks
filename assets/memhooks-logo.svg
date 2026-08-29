@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+  <title id="title">MemHooks</title>
+  <desc id="desc">A fish hook connecting a memory graph to code, representing mnemonic devices for AI agents.</desc>
+  <defs>
+    <linearGradient id="hook" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4c95d"/>
+      <stop offset="1" stop-color="#d99a22"/>
+    </linearGradient>
+    <linearGradient id="memory" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1598a5"/>
+      <stop offset="1" stop-color="#7457a6"/>
+    </linearGradient>
+  </defs>
+  <rect x="18" y="18" width="564" height="564" rx="92" fill="#fbfaf6" stroke="#dedbd2" stroke-width="8"/>
+  <g fill="none" stroke="url(#memory)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M118 221 C96 161 145 112 204 131 C229 95 291 106 302 154 C343 159 364 203 346 238 C366 273 342 317 300 320 C279 357 220 355 199 321 C152 330 112 294 118 252 C99 244 99 229 118 221Z"/>
+    <path d="M151 222 L203 181 L252 214 L300 171" opacity=".8"/>
+    <path d="M154 270 L204 235 L257 279 L309 235" opacity=".8"/>
+    <path d="M203 181 L204 235 L252 214 L257 279" opacity=".8"/>
+  </g>
+  <g fill="#fbfaf6" stroke="#1598a5" stroke-width="9">
+    <circle cx="151" cy="222" r="13"/><circle cx="203" cy="181" r="13"/>
+    <circle cx="252" cy="214" r="13"/><circle cx="300" cy="171" r="13"/>
+    <circle cx="154" cy="270" r="13"/><circle cx="204" cy="235" r="13"/>
+    <circle cx="257" cy="279" r="13"/><circle cx="309" cy="235" r="13"/>
+  </g>
+  <g fill="none" stroke="url(#hook)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="367" cy="119" r="31"/>
+    <path d="M367 153 V325 C367 407 447 442 496 390 C528 356 516 303 480 284"/>
+    <path d="M480 284 L521 281 L499 320"/>
+  </g>
+  <g>
+    <rect x="325" y="190" width="166" height="116" rx="22" fill="#ffffff" stroke="#d8d5cf" stroke-width="7"/>
+    <circle cx="351" cy="215" r="6" fill="#1598a5"/><circle cx="370" cy="215" r="6" fill="#7457a6"/>
+    <path d="M351 245 H390 M351 267 H422 M351 289 H405" stroke="#2f3a45" stroke-width="9" stroke-linecap="round"/>
+  </g>
+  <path d="M294 245 C326 245 333 245 350 245" fill="none" stroke="#d99a22" stroke-width="9" stroke-linecap="round" stroke-dasharray="10 13"/>
+  <text x="300" y="502" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="65" font-weight="700" fill="#20252b">Mem<tspan fill="#1598a5">Hooks</tspan></text>
+  <text x="300" y="542" text-anchor="middle" font-family="Georgia,serif" font-size="24" font-style="italic" fill="#6a5a7c">Mnemonic devices for agents</text>
+</svg>
