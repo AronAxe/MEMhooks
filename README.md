@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AronAxe/MEMhooks/e1c786033f68eab7b49dac8f11548d48707bbb4c/assets/memhooks-logo-original.jpg" alt="MemHooks logo" width="210" />
+  <img src="assets/memhooks-logo.jpg" alt="MemHooks logo" width="600" />
 </p>
 
 <h1 align="center">MemHooks</h1>
@@ -256,7 +256,7 @@ MEMhooks/
 ├── LICENSE
 ├── CHANGELOG.md
 ├── assets/
-│   ├── memhooks-logo.svg
+│   ├── memhooks-logo.jpg
 │   └── memhooks-hero.svg
 ├── hooks/
 │   └── hermes/
