@@ -33,3 +33,8 @@ sensitivity: private
 
 Use direct recall for concrete decisions, events, and implementation facts.
 Use deeper memory reasoning only when synthesis is actually required.
+
+If this turn establishes a durable non-obvious decision, failure, constraint,
+or rejected approach that future work here could miss, record one concise
+future-retrieval question in this hook (or use the runtime's MemHooks note
+helper). Store the actual fact in the memory backend, not here.
