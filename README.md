@@ -110,6 +110,26 @@ The important rule is simple:
 
 See [`references/memory-systems/`](references/memory-systems/) for the mappings.
 
+## Runtime hook support
+
+The **MemHooks convention and `SKILL.md` are agent-agnostic**. The repository's current **executable pre-LLM loader is Hermes-specific** because every agent runtime exposes hooks differently.
+
+Today:
+
+- **Hermes / Hermes Desktop:** includes a working `pre_llm_call` loader under [`hooks/hermes/`](hooks/hermes/).
+- **Other agents:** can use the MemHooks skill/spec immediately, but they do not yet get the same hard pre-LLM guarantee from this repository unless their own hook mechanism is wired to the same loader behavior.
+
+Porting the loader should be straightforward. A runtime integration only needs to do four things:
+
+```text
+1. fire before the model call
+2. obtain the active working directory
+3. load + merge MEMHOOKS.md from workspace root → current directory
+4. inject the merged contents into the model context
+```
+
+The filesystem traversal and inheritance semantics are generic; only the runtime's hook registration and context-injection API are agent-specific. Contributions for Claude Code, Codex, OpenCode, Cursor, or other runtimes are welcome under `hooks/<runtime>/`.
+
 ## Installation
 
 ### Hermes / Hermes Desktop
