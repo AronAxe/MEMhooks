@@ -10,7 +10,7 @@
   <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-compatible-7c4dff" />
   <img alt="Hermes" src="https://img.shields.io/badge/Hermes-compatible-00bcd4" />
   <img alt="Memory agnostic" src="https://img.shields.io/badge/memory-backend%20agnostic-2ea44f" />
-  <img alt="Version" src="https://img.shields.io/badge/version-0.1.0-orange" />
+  <img alt="Version" src="https://img.shields.io/badge/version-0.1.1-orange" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue" />
 </p>
 
@@ -104,6 +104,8 @@ MemHooks ships with worked examples rather than a giant adapter framework:
 | **Honcho** | semantic search/context for concrete memory; dialectic reasoning only when synthesis is needed |
 | **Anything else** | inspect the available memory tools, use the bundled mappings as examples, and infer the closest native operations |
 
+The important rule is simple:
+
 > **Do not require a bespoke MemHooks plugin for every memory system. A capable agent should adapt the retrieval intent to the tools it actually has.**
 
 See [`references/memory-systems/`](references/memory-systems/) for the mappings.
@@ -118,11 +120,30 @@ This repository itself is a standard Agent Skill directory. Clone or copy it int
 git clone https://github.com/AronAxe/MEMhooks.git ~/.hermes/skills/memhooks
 ```
 
-Or point Hermes `skills.external_dirs` at the parent directory containing this checkout.
+Or point Hermes `skills.external_dirs` at the parent directory containing this checkout. For Hermes Desktop, use the `skills` directory under the app's active `HERMES_HOME`.
 
-For Hermes Desktop, use the `skills` directory under the app's active `HERMES_HOME`.
+#### Guaranteed loading: install the real `pre_llm_call` hook
 
-No Python package, service or plugin is required.
+The skill tells an agent how MemHooks works. The included Hermes shell hook makes sure the agent **cannot simply forget to look for the file**. Hermes officially supports `pre_llm_call` context injection before the tool-calling loop; the bundled script uses that lifecycle point to load the applicable root → local `MEMHOOKS.md` chain and inject it into the current turn before the model sees it.
+
+```bash
+mkdir -p ~/.hermes/agent-hooks
+cp ~/.hermes/skills/memhooks/hooks/hermes/memhooks_pre_llm.py ~/.hermes/agent-hooks/
+chmod +x ~/.hermes/agent-hooks/memhooks_pre_llm.py
+```
+
+Add this to `~/.hermes/config.yaml`:
+
+```yaml
+hooks:
+  pre_llm_call:
+    - command: "python3 ~/.hermes/agent-hooks/memhooks_pre_llm.py"
+      timeout: 5
+```
+
+Hermes asks for approval the first time it sees a new shell hook. Once enabled, every user turn in a MemHooks-enabled directory deterministically loads the applicable hook files **before the LLM call**. No extra LLM call is used to discover or read them.
+
+See [`hooks/hermes/README.md`](hooks/hermes/README.md) and [`hooks/hermes/config.example.yaml`](hooks/hermes/config.example.yaml).
 
 ### Other agents
 
@@ -132,11 +153,13 @@ If your agent understands the open `SKILL.md` / Agent Skills convention, give it
 
 The canonical format is Markdown with YAML frontmatter. That gives the agent machine-readable routing metadata plus a tiny amount of optional human-readable guidance.
 
+Core fields:
+
 | Field | Purpose |
 |---|---|
 | `inherits` | inherit parent-directory hooks (`true` by default) |
-| `recall_queries` | concrete questions worth asking memory |
-| `entities` | named concepts/entities that sharpen retrieval |
+| `recall_queries` | the concrete questions worth asking memory |
+| `entities` | named concepts/entities that should sharpen retrieval |
 | `tags` | backend-neutral relevance hints |
 | `knowledge_pages` | existing stable summaries/mental-model-like resources to retrieve if the backend has an equivalent |
 | `exclude` | obsolete or misleading context that should not enter the current workspace |
@@ -165,11 +188,21 @@ an agent working in `/repo/backend/auth/` reads all three **in that order**.
 
 ## What MemHooks is *not*
 
-MemHooks is **not** a vector database, memory provider, automatic memory-writing system, knowledge-page generator, GraphRAG framework, or excuse to shove more tokens into every prompt.
+MemHooks is **not**:
+
+- a vector database;
+- a memory provider;
+- a replacement for Hindsight, OpenViking, Honcho, Mem0, Graphiti, etc.;
+- an automatic memory-writing system;
+- a knowledge-page generator;
+- a GraphRAG framework;
+- a reason to shove more tokens into every prompt.
 
 It is deliberately boring infrastructure:
 
 > **When an agent works here, remember these things first.**
+
+That is the whole trick.
 
 ## Repository layout
 
@@ -182,6 +215,11 @@ MEMhooks/
 ├── assets/
 │   ├── memhooks-logo.png
 │   └── memhooks-hero.svg
+├── hooks/
+│   └── hermes/
+│       ├── memhooks_pre_llm.py
+│       ├── config.example.yaml
+│       └── README.md
 ├── templates/
 │   └── MEMHOOKS.md
 ├── examples/
@@ -196,6 +234,28 @@ MEMhooks/
         └── 99-generic-or-unknown.md
 ```
 
+## Design philosophy
+
+MemHooks should stay small enough that implementing support feels almost silly.
+
+The goal is **not** to become another memory framework. It is to establish a useful convention between the filesystem and whichever memory framework you already chose.
+
+A good hook asks things like:
+
+- *Why was this architecture selected?*
+- *What failed here before?*
+- *Which decisions constrain changes in this folder?*
+- *Which entities are important to this subsystem?*
+- *Which old approach looks relevant but is actually obsolete?*
+
+A bad hook says:
+
+- *remember the project*
+- *search memory*
+- *load everything about auth*
+
+Specific retrieval beats indiscriminate context.
+
 ## Related: Token Terminator
 
 If MemHooks is about **retrieving the right context**, [**Token Terminator**](https://github.com/AronAxe/Token-Terminator) is about **not wasting tokens on the wrong context**.
@@ -204,7 +264,7 @@ They are separate projects, but they share the same basic prejudice: an AI agent
 
 ## Status
 
-**v0.1.0 — experimental convention / agent skill.**
+**v0.1.1 — experimental convention / agent skill + real Hermes pre-LLM loader.**
 
 The format is intentionally small and still open to refinement. Issues, backend mappings and real-world examples are welcome.
 
