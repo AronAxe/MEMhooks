@@ -1,7 +1,7 @@
 ---
 name: memhooks
 description: Directory-scoped memory retrieval routing. Use MEMHOOKS.md files from the workspace root to the active directory to recall the specific past decisions, events, entities, constraints, failures, and context needed before substantive work. Adapts itself to Hindsight, OpenViking, Honcho, or another available memory system without changing the memory backend.
-version: 0.1.1
+version: 0.2.0
 author: Aron Bijl
 license: MIT
 compatibility: Agent Skills / agentskills.io; Hermes Agent and Hermes Desktop; other skill-capable agents with filesystem access and optional memory tools.
@@ -58,7 +58,7 @@ Default behavior:
 - a local `inherits: false` cuts off inheritance above that file;
 - the most local scalar value wins when scalars conflict.
 
-Do not turn merged hooks into a giant context dump. They are instructions for **targeted retrieval**.
+Do not turn the merged hooks into a giant context dump. They are instructions for **targeted retrieval**.
 
 ### 3. Identify the available memory system
 
@@ -79,7 +79,7 @@ Interpret the merged fields as follows:
 - `recall_queries`: run these as specific memory searches/questions.
 - `entities`: use them as entity filters when available; otherwise use them to sharpen or expand the recall queries.
 - `tags`: use native tag/metadata filtering where available; otherwise treat them as relevance hints.
-- `knowledge_pages`: retrieve named established summaries/pages/mental-model-like artifacts **if the current memory setup has an equivalent**. Do not create or update them here.
+- `knowledge_pages`: retrieve the named established summaries/pages/mental-model-like artifacts **if the current memory setup has an equivalent**. Do not create or update them here.
 - `exclude`: prevent obsolete or unwanted memories from entering working context. Use native negative filters if available; otherwise post-filter results.
 - `bank`: use the requested memory namespace only if that concept exists and the agent is authorized to access it.
 - free-form Markdown below the frontmatter: treat as retrieval guidance, especially instructions about when to use shallow recall versus deeper synthesis.
@@ -97,6 +97,28 @@ If a required query returns nothing, note that internally and continue. Do not f
 Use the recalled context as ordinary task context. Preserve provenance when the memory system exposes it.
 
 MemHooks should disappear into the workflow: it is successful when the agent simply remembers the right things before acting.
+
+## Maintaining the routing file
+
+A `MEMHOOKS.md` file must evolve with the code or it becomes stale. Prefer the bundled deterministic maintainer wherever the runtime can fire it after tool calls.
+
+`scripts/memhooks_update.py` has three modes:
+
+- `init`: create the root opt-in hook for a repository;
+- `event`: inspect a runtime tool-event payload and maintain small file-path recall anchors with **zero LLM calls**;
+- `note`: add one concise semantic retrieval question discovered during the current turn.
+
+The `note` path must piggyback on the reasoning already happening. Do **not** start a separate LLM summarization pass merely to maintain MemHooks unless the user explicitly enables such a policy.
+
+When this turn establishes a durable, non-obvious decision, failure mode, constraint, rejected approach, or other fact that future work in the current subtree could fail to retrieve spontaneously, record a short **question/cue**, not the answer itself. Example:
+
+```text
+Why was refresh-token rotation split into two stages, and what alternatives were rejected?
+```
+
+The memory backend remains the source of the actual remembered facts. MemHooks only keeps the retrieval cue.
+
+For Hermes, `hooks/hermes/config.example.yaml` wires `event` to `post_tool_call`, while `pre_llm_call` performs deterministic loading. Other runtimes should map the same two lifecycle points to their native hook systems.
 
 ## Creating or updating `MEMHOOKS.md`
 
