@@ -1,7 +1,7 @@
 ---
 name: memhooks
 description: Directory-scoped memory retrieval routing. Use MEMHOOKS.md files from the workspace root to the active directory to recall the specific past decisions, events, entities, constraints, failures, and context needed before substantive work. Adapts itself to Hindsight, OpenViking, Honcho, or another available memory system without changing the memory backend.
-version: 0.1.0
+version: 0.1.1
 author: Aron Bijl
 license: MIT
 compatibility: Agent Skills / agentskills.io; Hermes Agent and Hermes Desktop; other skill-capable agents with filesystem access and optional memory tools.
@@ -20,6 +20,12 @@ Core rule:
 > Before substantive work, locate every `MEMHOOKS.md` from the workspace root to the active directory, merge them from broadest to most local, then execute the prescribed bounded retrieval using the memory system currently available to the agent.
 
 A MemHooks file tells you **what to recall here**. The attached memory backend determines **how to retrieve it**.
+
+## Deterministic loader mode
+
+When the bundled Hermes `pre_llm_call` shell hook is installed, do not rely on remembering to search for `MEMHOOKS.md` yourself. The hook has already walked the actual working directory root → leaf and injected the applicable files into the current user turn before this model call. Treat the injected `[MemHooks — deterministic pre-LLM retrieval routing]` block as authoritative routing input and execute its requested memory retrieval before substantive work.
+
+The loader is in `hooks/hermes/memhooks_pre_llm.py`. It reads files locally and performs no model call of its own.
 
 ## When to use
 
