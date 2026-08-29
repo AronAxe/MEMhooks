@@ -1,0 +1,14 @@
+# Add this block to ~/.hermes/config.yaml
+#
+# Hermes runs this script before the first LLM call of every user turn.
+# The script reads the applicable MEMHOOKS.md chain and returns
+# {"context": "..."}, which Hermes injects into the current user message.
+
+hooks:
+  pre_llm_call:
+    - command: "python3 ~/.hermes/agent-hooks/memhooks_pre_llm.py"
+      timeout: 5
+
+# Optional for non-interactive Gateway/Desktop starts after you have reviewed
+# the script. Otherwise approve the hook once at the Hermes prompt.
+# hooks_auto_accept: true
