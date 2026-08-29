@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 — 2026-08-29
+
+- Added `scripts/memhooks_update.py`, a zero-LLM routing-file maintainer.
+- Added `init`, `event`, and `note` modes.
+- Added deterministic `post_tool_call` auto-anchors so touched code areas acquire future recall cues without a model pass.
+- Added same-turn semantic notes for important decisions/failures/constraints without an extra LLM call.
+- Kept memory retention itself out of scope: MemHooks writes retrieval metadata, not memories.
+- Updated Hermes installation to wire both `pre_llm_call` loading and `post_tool_call` maintenance.
+
 ## 0.1.1 — 2026-08-29
 
 - Added a real Hermes `pre_llm_call` shell hook that deterministically loads applicable `MEMHOOKS.md` files before every user-turn LLM call.
