@@ -1,7 +1,7 @@
 ---
 name: memhooks
 description: Directory-scoped memory retrieval routing. Use MEMHOOKS.md files from the workspace root to the active directory to recall the specific past decisions, events, entities, constraints, failures, and context needed before substantive work. Adapts itself to Hindsight, OpenViking, Honcho, or another available memory system without changing the memory backend.
-version: 0.2.0
+version: 0.2.1
 author: Aron Bijl
 license: MIT
 compatibility: Agent Skills / agentskills.io; Hermes Agent and Hermes Desktop; other skill-capable agents with filesystem access and optional memory tools.
@@ -21,6 +21,35 @@ Core rule:
 
 A MemHooks file tells you **what to recall here**. The attached memory backend determines **how to retrieve it**.
 
+## Hermes slash command: `/memhooks init`
+
+Hermes automatically exposes installed skills as slash commands. Therefore this skill's project bootstrap is:
+
+```text
+/memhooks init
+```
+
+Treat `init` as a special bootstrap instruction, not as a normal memory-retrieval request.
+
+When invoked as `/memhooks init`:
+
+1. Resolve the target project from the active workspace/backend working directory.
+2. If an explicit path follows `init`, use that path instead when accessible.
+3. Resolve `scripts/memhooks_update.py` relative to this installed skill directory.
+4. Run its deterministic initializer:
+
+   ```bash
+   python3 scripts/memhooks_update.py init <target>
+   ```
+
+   Use the actual resolved script path when executing it.
+5. Verify that the target Git/repository root now contains `MEMHOOKS.md`.
+6. Return a short confirmation that MemHooks is enabled for that project.
+
+Do **not** perform a separate memory-retrieval pass merely because `init` was invoked. Initialization is the one-time per-project opt-in that allows the existing `post_tool_call` maintainer to create/update more local `MEMHOOKS.md` files automatically as work touches subdirectories.
+
+If the root hook already exists, treat `/memhooks init` as idempotent success.
+
 ## Deterministic loader mode
 
 When the bundled Hermes `pre_llm_call` shell hook is installed, do not rely on remembering to search for `MEMHOOKS.md` yourself. The hook has already walked the actual working directory root → leaf and injected the applicable files into the current user turn before this model call. Treat the injected `[MemHooks — deterministic pre-LLM retrieval routing]` block as authoritative routing input and execute its requested memory retrieval before substantive work.
@@ -31,8 +60,9 @@ The loader is in `hooks/hermes/memhooks_pre_llm.py`. It reads files locally and 
 
 Use this skill when:
 
+- the user invokes `/memhooks init` or otherwise asks to initialize MemHooks for a project;
 - the current workspace or any parent directory contains `MEMHOOKS.md`;
-- the user asks to initialize or update MemHooks for a project;
+- the user asks to update MemHooks for a project;
 - you are about to edit, debug, redesign, delete, or substantially reason about files in a MemHooks-enabled tree;
 - a task refers to previous project decisions, failures, constraints, events, or entities that may live in long-term memory.
 
@@ -167,7 +197,9 @@ MemHooks may point at existing summaries or memories. It does not manufacture th
 
 ## Failure behavior
 
-- No `MEMHOOKS.md`: continue normally.
+- `/memhooks init` with no existing root hook: create it using the deterministic initializer.
+- `/memhooks init` with an existing root hook: succeed without duplicating it.
+- No `MEMHOOKS.md` during ordinary work: continue normally.
 - No memory backend/tools: continue normally; do not pretend retrieval occurred.
 - Unknown backend: infer the mapping from available tools/docs and the reference examples.
 - Search returns nothing: continue without invented context.
