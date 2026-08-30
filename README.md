@@ -7,7 +7,7 @@
   <img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-compatible-7c4dff" />
   <img alt="Hermes" src="https://img.shields.io/badge/Hermes-compatible-00bcd4" />
   <img alt="Memory agnostic" src="https://img.shields.io/badge/memory-backend%20agnostic-2ea44f" />
-  <img alt="Version" src="https://img.shields.io/badge/version-0.2.0-orange" />
+  <img alt="Version" src="https://img.shields.io/badge/version-0.2.1-orange" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue" />
 </p>
 
@@ -56,6 +56,34 @@ recall the exact context that matters
    ↓
 do the work
 ```
+
+## One-command project bootstrap
+
+MemHooks is deliberately **opt-in per project**. You only need to seed the project once.
+
+Hermes automatically exposes installed skills as slash commands. So, from inside the project you want to enable, run:
+
+```text
+/memhooks init
+```
+
+That is the ignition key. The MemHooks skill delegates to the existing deterministic initializer, which creates the root `MEMHOOKS.md` if it does not already exist. After that, the `post_tool_call` maintainer can create/update more local `MEMHOOKS.md` files automatically as work touches subdirectories.
+
+You do **not** need to hand-create a hook file in every folder.
+
+Optional explicit target:
+
+```text
+/memhooks init /path/to/project
+```
+
+The low-level equivalent is still available:
+
+```bash
+python3 scripts/memhooks_update.py init /path/to/project
+```
+
+Hermes' slash-command system exposes installed skills dynamically, so MemHooks does not patch Hermes' built-in command registry. See the [Hermes Slash Commands Reference](https://hermes-agent.nousresearch.com/docs/reference/slash-commands).
 
 ## Why it exists
 
@@ -187,13 +215,19 @@ hooks:
       timeout: 5
 ```
 
-Enable MemHooks once in a project:
+Enable MemHooks once in the current project:
+
+```text
+/memhooks init
+```
+
+Or, if you want to bypass the skill command and call the initializer directly:
 
 ```bash
 python3 ~/.hermes/agent-hooks/memhooks_update.py init /path/to/project
 ```
 
-Hermes asks for approval the first time it sees a new shell hook. Once enabled, `pre_llm_call` deterministically loads the applicable hook files **before the LLM call**, while `post_tool_call` maintains file-scoped recall anchors after substantive tool activity. Neither path makes an extra LLM call.
+Hermes asks for approval the first time it sees a new shell hook. Once enabled, `pre_llm_call` deterministically loads the applicable hook files **before the LLM call**, while `post_tool_call` maintains file-scoped recall anchors after substantive tool activity. Neither maintenance path makes an extra LLM call.
 
 See [`hooks/hermes/README.md`](hooks/hermes/README.md) and [`hooks/hermes/config.example.yaml`](hooks/hermes/config.example.yaml).
 
@@ -306,7 +340,7 @@ They are separate projects, but they share the same basic prejudice: an AI agent
 
 ## Status
 
-**v0.2.0 — experimental convention / agent skill + deterministic load-and-maintain runtime.**
+**v0.2.1 — experimental convention / agent skill + deterministic load-and-maintain runtime.**
 
 The format is intentionally small and still open to refinement. Issues, backend mappings and real-world examples are welcome.
 
