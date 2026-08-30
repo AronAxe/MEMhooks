@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — 2026-08-30
+
+- Added the Hermes slash-command bootstrap `/memhooks init` for one-time per-project opt-in.
+- Documented that Hermes automatically exposes installed skills as slash commands, so MemHooks does not patch Hermes' built-in command registry.
+- `/memhooks init` delegates to the existing deterministic `scripts/memhooks_update.py init` initializer and creates the root `MEMHOOKS.md` for the active project.
+- Clarified that only the project root needs explicit initialization; downstream `MEMHOOKS.md` files can then be created and maintained automatically from tool activity.
+
 ## 0.2.0 — 2026-08-29
 
 - Added `scripts/memhooks_update.py`, a zero-LLM routing-file maintainer.
