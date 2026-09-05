@@ -1,0 +1,50 @@
+name: Publish MemHooks v0.2.1
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/publish-v0.2.1.yml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create v0.2.1 release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > /tmp/release-notes.md <<'EOF'
+          First official GitHub release of **MemHooks** — mnemonic devices for agents: filesystem-scoped recall priming that hooks the right memories into the right context.
+
+          ## Highlights
+
+          - Added the Hermes slash-command bootstrap: `/memhooks init`.
+          - Added deterministic `pre_llm_call` loading and `post_tool_call` maintenance with **zero extra LLM calls**.
+          - Added root-to-leaf `MEMHOOKS.md` inheritance with bounded, directory-scoped retrieval cues.
+          - Added `init`, `event`, and `note` modes in `scripts/memhooks_update.py`.
+          - Added memory-system mappings for Hindsight, OpenViking, Honcho, and generic/unknown backends.
+          - Kept MemHooks deliberately retrieval-only: it routes recall but does not create, rewrite, consolidate, or delete memories.
+          - Added anti-recall via `exclude` to keep obsolete or misleading memories out of working context.
+
+          ## Status
+
+          **v0.2.1 is experimental.** The convention and format are intentionally small and still open to refinement. Runtime adapters for additional agent environments are welcome.
+
+          See `CHANGELOG.md` for the detailed 0.1.x → 0.2.1 history.
+          EOF
+
+          if gh release view v0.2.1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release v0.2.1 already exists; nothing to do."
+            exit 0
+          fi
+
+          gh release create v0.2.1 \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "MemHooks v0.2.1" \
+            --notes-file /tmp/release-notes.md
