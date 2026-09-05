@@ -1,0 +1,23 @@
+name: Retag MemHooks v0.2.1 cleanly
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/retag-v0.2.1.yml
+
+permissions:
+  contents: write
+
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Point v0.2.1 at the clean project commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/v0.2.1" \
+            -f sha='07d4e47796f598b8f8a1491a150d96fa2122f2d0' \
+            -F force=true
